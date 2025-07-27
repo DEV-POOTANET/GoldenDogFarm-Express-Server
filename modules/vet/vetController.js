@@ -16,7 +16,11 @@ const add_vet = async (req, res) => {
 const get_vet = async (req, res) => {
     try {
         const vets = await vetService.get_vet();
-        res.status(200).json({ data: vets.map(vet => vet.getVet()) });
+        const response = vets.map(vet => ({
+            ...vet.getVet(),
+            clinic_Name: vet.clinic_Name
+        }));
+        res.status(200).json({ data: response });
     } catch (err) {
         console.error("เกิดข้อผิดพลาด:", err);
         res.status(500).json({ error: "ไม่สามารถดึงข้อมูลสัตวแพทย์ได้" });
@@ -31,7 +35,12 @@ const get_vetID = async (req, res) => {
         const vet = await vetService.get_vetID(id);
         if (!vet) return res.status(404).json({ error: "ไม่พบสัตวแพทย์ที่ระบุ" });
 
-        res.status(200).json(vet.getVet());
+        const response = {
+            ...vet.getVet(),
+            clinic_Name: vet.clinic_Name
+        };
+
+        res.status(200).json(response);
     } catch (err) {
         console.error("เกิดข้อผิดพลาด:", err);
         res.status(500).json({ error: "ไม่สามารถดึงข้อมูลสัตวแพทย์ได้" });

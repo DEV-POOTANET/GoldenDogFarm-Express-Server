@@ -10,15 +10,33 @@ const add_vet = async (name, phone, clinicId) => {
 };
 
 const get_vet = async () => {
-    const query = `SELECT * FROM vet WHERE vet_Status = '1'`;
+    const query = `
+        SELECT v.*, c.clinic_Name
+        FROM vet v
+        LEFT JOIN clinic c ON v.vet_Clinic_ID = c.clinic_ID
+        WHERE v.vet_Status = '1'
+    `;
     const [rows] = await db.promise().query(query);
-    return rows.map(row => new Vet(row));
+    return rows.map(row => {
+        const vet = new Vet(row);
+        vet.clinic_Name = row.clinic_Name;
+        return vet;
+    });
 };
 
 const get_vetID = async (id) => {
-    const query = `SELECT * FROM vet WHERE vet_ID = ?`;
+    const query = `
+        SELECT v.*, c.clinic_Name
+        FROM vet v
+        LEFT JOIN clinic c ON v.vet_Clinic_ID = c.clinic_ID
+        WHERE v.vet_ID = ?
+    `;
     const [rows] = await db.promise().query(query, [id]);
-    if (rows.length > 0) return new Vet(rows[0]);
+    if (rows.length > 0) {
+        const vet = new Vet(rows[0]);
+        vet.clinic_Name = rows[0].clinic_Name;
+        return vet;
+    }
     return null;
 };
 
