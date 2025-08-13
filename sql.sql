@@ -46,7 +46,19 @@ CREATE TABLE vet (
 );
 
 
+CREATE TABLE vaccine_list (
+     vaccine_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+     vaccine_Name VARCHAR(100) NOT NULL,
+     vaccine_Description TEXT,
+     vaccine_Status VARCHAR(1) NOT NULL CHECK (vaccine_Status IN ('1', '2'))
+);
 
+CREATE TABLE health_check_list (
+   hCL_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+   hCL_Name VARCHAR(100) NOT NULL,
+   hCL_Description TEXT,
+   hCL_Status VARCHAR(1) NOT NULL CHECK (hCL_Status IN ('1', '2'))
+);
 
 
 
