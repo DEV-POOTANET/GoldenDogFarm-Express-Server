@@ -60,6 +60,12 @@ CREATE TABLE health_check_list (
    hCL_Status VARCHAR(1) NOT NULL CHECK (hCL_Status IN ('1', '2'))
 );
 
+CREATE TABLE treatment_list (
+    tL_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tL_Name VARCHAR(100) NOT NULL,
+    tL_Description TEXT,
+    tL_Status VARCHAR(1) NOT NULL CHECK (tL_Status IN ('1', '2'))
+);
 
 
 
