@@ -70,6 +70,16 @@ CREATE TABLE treatment_list (
 
 
 
+CREATE TABLE Customers
+(
+    cus_ID        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    cus_Name      VARCHAR(50)  NOT NULL,
+    cus_Phone     VARCHAR(10)  NOT NULL,
+    cus_Email     VARCHAR(100),
+    cus_Facebook  VARCHAR(255),
+    cus_Line      VARCHAR(255),
+    cus_Status    VARCHAR(1)   NOT NULL DEFAULT '1' CHECK (cus_Status IN ('1','2'))
+);
 
 
 

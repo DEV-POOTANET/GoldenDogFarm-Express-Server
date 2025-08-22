@@ -13,6 +13,7 @@ const vetRoutes = require('../modules/vet/vetRoutes');
 const  vaccinesRoutes = require('../modules/vaccines/vaccineRouter');
 const  healthCheckListRoutes = require('../modules/healthCheckList/healthCheckListRoute');
 const treatmentListRoutes = require('../modules/treatmentList/treatmentListRoute');
+const  customerRoutes = require('../modules/customers/customerRoute');
 router.use('/auth',authRoutes);
 
 router.use('/users', authenticateToken,userRoutes);
@@ -30,5 +31,7 @@ router.use('/vaccines',authenticateToken,vaccinesRoutes);
 router.use('/healthCheckList',authenticateToken,healthCheckListRoutes);
 
 router.use('/treatmentList',authenticateToken,treatmentListRoutes);
+
+router.use('/customers',authenticateToken,customerRoutes);
 
 module.exports = router;
