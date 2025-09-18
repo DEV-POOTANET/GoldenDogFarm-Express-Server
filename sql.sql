@@ -83,11 +83,80 @@ CREATE TABLE Customers
 
 
 
+CREATE TABLE Dogs (
+      dog_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      dog_Microchip VARCHAR(100),
+      dog_RegNo VARCHAR(20),
+      dog_Name VARCHAR(50) NOT NULL,
+      dog_CallName VARCHAR(50),
+      dog_Birthday DATE,
+      dog_PedigreePDF VARCHAR(50),
+      dog_Status VARCHAR(1) NOT NULL CHECK (dog_Status IN ('1','2','3','4','5','6')),
+      dog_StatusBreeding VARCHAR(1) NOT NULL CHECK (dog_StatusBreeding IN ('1','2','3','4','5')),
+      dog_StatusSale VARCHAR(1) NOT NULL CHECK (dog_StatusSale IN ('1','2','3','4')),
+      dog_StatusDel VARCHAR(1) NOT NULL CHECK (dog_StatusDel IN ('1','2')),
+      dog_Owner VARCHAR(100),
+      dog_Breeder VARCHAR(100),
+      dog_Gender VARCHAR(1) NOT NULL CHECK (dog_Gender IN ('M','F')),
+      dog_K9Url VARCHAR(255),
+      dog_Price DECIMAL(15,2) NOT NULL,
+      color_ID INT UNSIGNED NOT NULL,
+      dog_Dad INT UNSIGNED,
+      dog_Mom INT UNSIGNED,
+      breeding_ID INT UNSIGNED,
+
+-- กำหนดความสัมพันธ์กับตัวเอง (พ่อ-แม่)
+      CONSTRAINT fk_dog_dad FOREIGN KEY (dog_Dad) REFERENCES Dogs(dog_ID) ON DELETE SET NULL,
+      CONSTRAINT fk_dog_mom FOREIGN KEY (dog_Mom) REFERENCES Dogs(dog_ID) ON DELETE SET NULL
+);
+
+-- ตารางรูปสุนัข
+CREATE TABLE Dog_Images (
+        img_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        dog_ID INT UNSIGNED NOT NULL,
+        img_URL VARCHAR(255) NOT NULL,
+        img_Type VARCHAR(1) NOT NULL CHECK (img_Type IN ('1','2','3')),
+        img_Status VARCHAR(1) NOT NULL CHECK (img_Status IN ('1','2')),
+
+    -- ความสัมพันธ์กับ Dogs
+        CONSTRAINT fk_image_dog FOREIGN KEY (dog_ID) REFERENCES Dogs(dog_ID) ON DELETE CASCADE
+);
+
+
+
+-- ตารางการผสมพันธุ์
+CREATE TABLE Breeding (
+      breed_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      mother_ID INT UNSIGNED NOT NULL,
+      breed_DueDate DATE,
+      breed_ActualBirth DATE,
+      breed_Notes TEXT,
+      puppy_Count INT,
+      breed_Status VARCHAR(1) NOT NULL CHECK (breed_Status IN ('1','2','3','4')),
+
+-- ความสัมพันธ์กับแม่สุนัข
+      CONSTRAINT fk_breeding_mother FOREIGN KEY (mother_ID) REFERENCES Dogs(dog_ID) ON DELETE CASCADE
+);
+
+-- เพิ่ม constraint ให้ Dogs อ้างอิง Breeding
+ALTER TABLE Dogs
+    ADD CONSTRAINT fk_dog_breeding FOREIGN KEY (breeding_ID) REFERENCES Breeding(breed_ID) ON DELETE SET NULL;
 
 
 
 
 
+CREATE TABLE Dog_Position (
+  dp_ID        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  dog_ID       INT UNSIGNED NOT NULL,
+  position_ID  INT UNSIGNED NOT NULL,
+  dp_Year      YEAR NOT NULL,
+  dp_Status    VARCHAR(1) NOT NULL CHECK (dp_Status IN ('1','2')),
+
+  CONSTRAINT fk_dp_dog FOREIGN KEY (dog_ID) REFERENCES Dogs(dog_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+
+  CONSTRAINT `fk_dp_position` FOREIGN KEY (`position_ID`) REFERENCES `position` (`position_ID`) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 
 
@@ -115,3 +184,11 @@ VALUES (1, 'admin@gmail.com', '$2b$10$VzluZhAys0/1tDvJ5Bo7T.6NHKjbUgkrFB6w6W0eik
         '0812345678', 'S', '1'),
        (3, 'hatsanai1@gmail.com', '$2b$10$w1jfVPjBAueDt.iAZtLUAudVn.qpYY1mkxhxBEJTowkHDsc85Ok3m', 'นายหัสนัย หม้อยา1',
         '0612161314', 'A', '1');
+
+
+///// reset data in table
+
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE dog_images;
+TRUNCATE TABLE dogs;
+SET FOREIGN_KEY_CHECKS = 1;
