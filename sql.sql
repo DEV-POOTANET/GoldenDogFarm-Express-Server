@@ -161,6 +161,30 @@ CREATE TABLE Dog_Position (
 
 
 
+CREATE TABLE vaccination_records (
+ vR_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ vaccine_ID INT UNSIGNED NOT NULL,
+ dog_ID INT UNSIGNED NOT NULL,
+ user_ID INT UNSIGNED NOT NULL,
+ vR_Status VARCHAR(1) NOT NULL CHECK (vR_Status IN ('1', '2', '3', '4')),
+ FOREIGN KEY (vaccine_ID) REFERENCES vaccine_list(vaccine_ID),
+ FOREIGN KEY (dog_ID) REFERENCES dogs(dog_ID),
+ FOREIGN KEY (user_ID) REFERENCES users(user_ID)
+);
+
+CREATE TABLE dose_schedules (
+    dS_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    vR_ID INT UNSIGNED NOT NULL,
+    vet_ID INT UNSIGNED,
+    dS_Number INT NOT NULL,
+    dS_ScheduledDate DATE NOT NULL,
+    dS_ActualDate DATE,
+    dS_Notes TEXT,
+    dS_Status VARCHAR(1) NOT NULL CHECK (dS_Status IN ('1', '2', '3', '4')),
+    FOREIGN KEY (vR_ID) REFERENCES vaccination_records(vR_ID),
+    FOREIGN KEY (vet_ID) REFERENCES vet(vet_ID)
+);
+
 
 INSERT INTO users
 (user_Email,

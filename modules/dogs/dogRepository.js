@@ -271,7 +271,6 @@ const get_dogs = async ({ dog_Name, dog_Status, dog_StatusBreeding, dog_StatusSa
 
     const [dataResult] = await db.promise().query(dataQuery, params);
 
-    // ดึงรูปทั้งหมดทีหลัง
     const dogIDs = dataResult.map(d => d.dog_ID);
     let imagesMap = {};
     if (dogIDs.length > 0) {
