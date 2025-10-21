@@ -186,6 +186,33 @@ CREATE TABLE dose_schedules (
 );
 
 
+
+
+CREATE TABLE DogHealthCheck (
+    dHC_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    dog_ID INT UNSIGNED NOT NULL,
+    hCL_ID INT UNSIGNED NOT NULL,
+    vet_ID INT UNSIGNED NOT NULL,
+    dHC_ScheduledDate DATE NOT NULL,
+    dHC_ActualDate DATE NULL,
+    dHC_Notes TEXT NULL,
+    dHC_Status VARCHAR(1) NOT NULL CHECK (dHC_Status IN ('1','2','3','4')),
+    dHC_Result VARCHAR(1) NOT NULL CHECK (dHC_Result IN ('1','2','3')),
+
+    FOREIGN KEY (dog_ID) REFERENCES Dogs(dog_ID),
+    FOREIGN KEY (hCL_ID) REFERENCES health_check_list(hCL_ID),
+    FOREIGN KEY (vet_ID) REFERENCES vet(vet_ID)
+);
+
+
+
+
+
+
+
+
+
+
 INSERT INTO users
 (user_Email,
  user_Password,
