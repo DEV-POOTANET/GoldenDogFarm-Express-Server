@@ -10,7 +10,7 @@ const get_dogByGenderForBreeding = async (Gender) => {
 const add_dog = async (dogData) => {
     // ตรวจสอบ dog_Microchip ว่าซ้ำหรือไม่
     if (dogData.dog_Microchip) {
-        const [existing] = await db.promise().query(ป
+        const [existing] = await db.promise().query(
             `SELECT dog_ID FROM Dogs WHERE dog_Microchip = ?`,
             [dogData.dog_Microchip]
         );

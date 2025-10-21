@@ -19,6 +19,7 @@ const breedingRoutes = require('../modules/breeding/breedingRouter');
 const dogPositionRoutes = require('../modules/dogPosition/dogPositionRoute');
 const vaccinationRoutes = require('../modules/vaccinations/vaccinationRouter');
 const dogHealthCheckRoutes = require('../modules/dogHealthCheck/dogHealthCheckRoutes');
+const treatmentRecordRoutes = require('../modules/treatmentRecord/treatmentRecordRoute');
 router.use('/auth',authRoutes);
 
 router.use('/users', authenticateToken,userRoutes);
@@ -48,5 +49,7 @@ router.use('/dogPositions',authenticateToken, dogPositionRoutes);
 router.use('/vaccinations',authenticateToken, vaccinationRoutes);
 
 router.use('/dogHealthCheck',authenticateToken, dogHealthCheckRoutes);
+
+router.use('/treatmentRecord',authenticateToken, treatmentRecordRoutes);
 
 module.exports = router;

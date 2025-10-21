@@ -110,6 +110,13 @@ CREATE TABLE Dogs (
       CONSTRAINT fk_dog_mom FOREIGN KEY (dog_Mom) REFERENCES Dogs(dog_ID) ON DELETE SET NULL
 );
 
+
+ALTER TABLE Dogs
+    ADD CONSTRAINT fk_dog_color
+        FOREIGN KEY (color_ID) REFERENCES dogs_color(color_ID)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE;
+
 -- ตารางรูปสุนัข
 CREATE TABLE Dog_Images (
         img_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -205,7 +212,22 @@ CREATE TABLE DogHealthCheck (
 );
 
 
+CREATE TABLE TreatmentRecords (
+  tR_ID INT  UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  tL_ID INT UNSIGNED NOT NULL,
+  dog_ID INT UNSIGNED NOT NULL,
+  vet_ID INT UNSIGNED NOT NULL,
+  user_ID INT UNSIGNED NOT NULL,
+  tR_Status VARCHAR(1) NOT NULL CHECK (tR_Status IN ('1','2','3','4')),
+  tR_StartDate DATE NOT NULL,
+  tR_EndDate DATE,
 
+  FOREIGN KEY (tL_ID) REFERENCES TreatmentList(tL_ID),
+  FOREIGN KEY (dog_ID) REFERENCES Dogs(dog_ID),
+  FOREIGN KEY (vet_ID) REFERENCES Vet(vet_ID),
+  FOREIGN KEY (user_ID) REFERENCES User(user_ID)
+
+);
 
 
 
