@@ -71,19 +71,18 @@ const add_dog = async (dogData) => {
 };
 
 const edit_dog = async (id, updates) => {
-    const fields = [];
-    const values = [];
-
     if (updates.dog_Microchip) {
         const [existing] = await db.promise().query(
-            `SELECT dog_ID FROM Dogs WHERE dog_Microchip = ?`,
-            [updates.dog_Microchip]
+            `SELECT dog_ID FROM Dogs WHERE dog_Microchip = ? AND dog_ID != ?`,
+            [updates.dog_Microchip, id]
         );
         if (existing.length > 0) {
             throw new Error("หมายเลขไมโครชิปนี้มีอยู่ในระบบแล้ว");
         }
     }
 
+    const fields = [];
+    const values = [];
 
     if (updates.dog_Microchip !== undefined) {
         fields.push("dog_Microchip = ?");
@@ -104,6 +103,10 @@ const edit_dog = async (id, updates) => {
     if (updates.dog_Birthday !== undefined) {
         fields.push("dog_Birthday = ?");
         values.push(updates.dog_Birthday);
+    }
+    if (updates.dog_PedigreePDF !== undefined) {
+        fields.push("dog_PedigreePDF = ?");
+        values.push(updates.dog_PedigreePDF);
     }
     if (updates.dog_Status !== undefined) {
         fields.push("dog_Status = ?");
@@ -167,6 +170,11 @@ const edit_dog = async (id, updates) => {
     return result;
 };
 
+const update_pedigree_pdf = async (dogID, pdfPath) => {
+    const query = `UPDATE Dogs SET dog_PedigreePDF = ? WHERE dog_ID = ?`;
+    const [result] = await db.promise().query(query, [pdfPath, dogID]);
+    return result.affectedRows > 0;
+};
 
 const add_dog_image = async (dogID, filename, type) => {
     const query = `INSERT INTO Dog_Images (dog_ID, img_URL, img_Type, img_Status) VALUES (?, ?, ?, '1')`;
@@ -310,4 +318,4 @@ const disable_Dog = async (dogID) => {
 };
 
 
-module.exports = { add_dog, add_dog_image, get_dogID ,edit_dog,get_dogs,disable_Dog};
+module.exports = { add_dog, add_dog_image, get_dogID ,edit_dog,get_dogs,disable_Dog,update_pedigree_pdf};

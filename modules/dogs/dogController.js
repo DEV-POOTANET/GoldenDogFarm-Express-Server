@@ -63,50 +63,10 @@ const add_dog = async (req, res) => {
 const edit_dog = async (req, res) => {
     try {
         const dogId = parseInt(req.params.id);
+        const dogData = req.body;
+        const files = req.files;
 
-        const {
-            microchip,
-            regNo,
-            name,
-            callName,
-            birthday,
-            status,
-            statusBreeding,
-            statusSale,
-            statusDel,
-            owner,
-            breeder,
-            gender,
-            k9Url,
-            price,
-            colorID,
-            dad,
-            mom,
-            breedingID
-        } = req.body;
-
-        const updated = await dogService.edit_dog(
-            dogId,
-            microchip,
-            regNo,
-            name,
-            callName,
-            birthday,
-            status,
-            statusBreeding,
-            statusSale,
-            statusDel,
-            owner,
-            breeder,
-            gender,
-            k9Url,
-            price,
-            colorID,
-            dad,
-            mom,
-            breedingID
-        );
-
+        const updated = await dogService.edit_dog(dogId, dogData, files);
         if (!updated) {
             return res.status(404).json({ error: "ไม่พบข้อมูลสุนัข" });
         }
@@ -117,6 +77,7 @@ const edit_dog = async (req, res) => {
         res.status(500).json({ error: "ไม่สามารถแก้ไขข้อมูลสุนัขได้" });
     }
 };
+
 const get_dogs = async (req, res) => {
     try {
         const { dog_Name, dog_Status, dog_StatusBreeding, dog_StatusSale, dog_Gender, page, limit } = req.query;

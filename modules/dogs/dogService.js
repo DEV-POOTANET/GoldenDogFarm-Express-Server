@@ -2,6 +2,15 @@ const dogRepository = require("./dogRepository");
 const Dog = require("../../models/dogModel");
 const path = require("path");
 const dogImgRepository = require("../dogImg/dogImgRepository");
+const fs = require("fs");
+
+const uploadDirs = {
+    profile: path.join(__dirname, "../../Uploads/dogs/profile"),
+    pedigree: path.join(__dirname, "../../Uploads/dogs/pedigreePdf"),
+    pedigreeImg: path.join(__dirname, "../../Uploads/dogs/pedigreeImg"),
+    show: path.join(__dirname, "../../Uploads/dogs/show")
+};
+
 const add_dog = async (dogData, files) => {
 
     // ตรวจสอบ dog_Dad และ dog_Mom
@@ -77,56 +86,156 @@ const add_dog = async (dogData, files) => {
     return new Dog(newDog);
 };
 
-const edit_dog = async (
-    id,
-    microchip,
-    regNo,
-    name,
-    callName,
-    birthday,
-    status,
-    statusBreeding,
-    statusSale,
-    statusDel,
-    owner,
-    breeder,
-    gender,
-    k9Url,
-    price,
-    colorID,
-    dad,
-    mom,
-    breedingID
-) => {
+const edit_dog = async (id, dogData, files) => {
     const existing = await dogRepository.get_dogID(id);
     if (!existing) return null;
 
     const updates = {};
-    if (microchip) updates.dog_Microchip = microchip;
-    if (regNo) updates.dog_RegNo = regNo;
-    if (name) updates.dog_Name = name;
-    if (callName) updates.dog_CallName = callName;
-    if (birthday) updates.dog_Birthday = birthday;
-    if (status) updates.dog_Status = status;
-    if (statusBreeding) updates.dog_StatusBreeding = statusBreeding;
-    if (statusSale) updates.dog_StatusSale = statusSale;
-    if (statusDel) updates.dog_StatusDel = statusDel;
-    if (owner) updates.dog_Owner = owner;
-    if (breeder) updates.dog_Breeder = breeder;
-    if (gender) updates.dog_Gender = gender;
-    if (k9Url) updates.dog_K9Url = k9Url;
-    if (price) updates.dog_Price = price;
-    if (colorID) updates.color_ID = colorID;
-    if (dad !== undefined) updates.dog_Dad = dad;
-    if (mom !== undefined) updates.dog_Mom = mom;
-    if (breedingID !== undefined) updates.breeding_ID = breedingID;
+    if (dogData.dog_Microchip) updates.dog_Microchip = dogData.dog_Microchip;
+    if (dogData.dog_RegNo) updates.dog_RegNo = dogData.dog_RegNo;
+    if (dogData.dog_Name) updates.dog_Name = dogData.dog_Name;
+    if (dogData.dog_CallName) updates.dog_CallName = dogData.dog_CallName;
+    if (dogData.dog_Birthday) updates.dog_Birthday = dogData.dog_Birthday;
+    if (dogData.dog_Status) updates.dog_Status = dogData.dog_Status;
+    if (dogData.dog_StatusBreeding) updates.dog_StatusBreeding = dogData.dog_StatusBreeding;
+    if (dogData.dog_StatusSale) updates.dog_StatusSale = dogData.dog_StatusSale;
+    if (dogData.dog_StatusDel) updates.dog_StatusDel = dogData.dog_StatusDel;
+    if (dogData.dog_Owner) updates.dog_Owner = dogData.dog_Owner;
+    if (dogData.dog_Breeder) updates.dog_Breeder = dogData.dog_Breeder;
+    if (dogData.dog_Gender) updates.dog_Gender = dogData.dog_Gender;
+    if (dogData.dog_K9Url) updates.dog_K9Url = dogData.dog_K9Url;
+    if (dogData.dog_Price) updates.dog_Price = dogData.dog_Price;
+    if (dogData.color_ID) updates.color_ID = dogData.color_ID;
+    if (dogData.dog_Dad !== undefined) updates.dog_Dad = dogData.dog_Dad;
+    if (dogData.dog_Mom !== undefined) updates.dog_Mom = dogData.dog_Mom;
+    if (dogData.breeding_ID !== undefined) updates.breeding_ID = dogData.breeding_ID;
+
+    // จัดการไฟล์
+    const profileImage = files?.profile ? files.profile[0].filename : null;
+    const pedigreePDF = files?.pedigree ? files.pedigree[0].filename : null;
+    const pedigreeImg = files?.pedigreeImg ? files.pedigreeImg[0].filename : null;
+    const showImages = files?.show ? files.show.map(f => f.filename) : [];
+
+    // validate files
+    if (pedigreePDF && path.extname(pedigreePDF).toLowerCase() !== ".pdf") {
+        throw new Error("ไฟล์ Pedigree ต้องเป็น .pdf เท่านั้น");
+    }
+    if (profileImage && ![".jpg", ".jpeg", ".png"].includes(path.extname(profileImage).toLowerCase())) {
+        throw new Error("Profile ต้องเป็น .jpg, .jpeg หรือ .png");
+    }
+    if (pedigreeImg && ![".jpg", ".jpeg", ".png"].includes(path.extname(pedigreeImg).toLowerCase())) {
+        throw new Error("Pedigree Image ต้องเป็น .jpg, .jpeg หรือ .png");
+    }
+    if (showImages.length > 4) {
+        throw new Error("Show images ต้องไม่เกิน 4 รูป");
+    }
+
+    if (pedigreePDF) updates.dog_PedigreePDF = pedigreePDF;
 
     const result = await dogRepository.edit_dog(id, updates);
     if (result.affectedRows === 0) return null;
 
+    // จัดการรูปภาพ
+    await handleImageUpdates(id, dogData, profileImage, pedigreeImg, showImages, pedigreePDF, existing);
+
     const updated = await dogRepository.get_dogID(id);
     return new Dog(updated);
 };
+
+async function handleImageUpdates(dogID, dogData, profileImage, pedigreeImg, showImages, pedigreePDF, existing) {
+    // Profile
+    if (dogData.delete_profile === "true") {
+        if (existing.mainImage) {
+            try {
+                fs.unlinkSync(path.join(uploadDirs.profile, existing.mainImage));
+            } catch (err) {
+                console.error("Error deleting profile image:", err);
+            }
+        }
+        await dogImgRepository.delete_dog_image(dogID, "1");
+    } else if (profileImage) {
+        if (existing.mainImage) {
+            try {
+                fs.unlinkSync(path.join(uploadDirs.profile, existing.mainImage));
+            } catch (err) {
+                console.error("Error deleting old profile image:", err);
+            }
+        }
+        await dogImgRepository.update_or_add_dog_image(dogID, profileImage, "1");
+    }
+
+    // Pedigree PDF
+    if (dogData.delete_pedigree === "true") {
+        if (existing.dog_PedigreePDF) {
+            try {
+                fs.unlinkSync(path.join(uploadDirs.pedigree, existing.dog_PedigreePDF));
+            } catch (err) {
+                console.error("Error deleting pedigree PDF:", err);
+            }
+        }
+        await dogRepository.update_pedigree_pdf(dogID, null);
+    } else if (pedigreePDF) {
+        if (existing.dog_PedigreePDF) {
+            try {
+                fs.unlinkSync(path.join(uploadDirs.pedigree, existing.dog_PedigreePDF));
+            } catch (err) {
+                console.error("Error deleting old pedigree PDF:", err);
+            }
+        }
+        await dogRepository.update_pedigree_pdf(dogID, pedigreePDF);
+    }
+
+    // Pedigree Image
+    if (dogData.delete_pedigreeImg === "true") {
+        if (existing.pedigreeImage) {
+            try {
+                fs.unlinkSync(path.join(uploadDirs.pedigreeImg, existing.pedigreeImage));
+            } catch (err) {
+                console.error("Error deleting pedigree image:", err);
+            }
+        }
+        await dogImgRepository.delete_dog_image(dogID, "2");
+    } else if (pedigreeImg) {
+        if (existing.pedigreeImage) {
+            try {
+                fs.unlinkSync(path.join(uploadDirs.pedigreeImg, existing.pedigreeImage));
+            } catch (err) {
+                console.error("Error deleting old pedigree image:", err);
+            }
+        }
+        await dogImgRepository.update_or_add_dog_image(dogID, pedigreeImg, "2");
+    }
+
+    // Show Images
+    if (dogData.delete_show_all === "true") {
+        for (const img of existing.showImages) {
+            try {
+                fs.unlinkSync(path.join(uploadDirs.show, img.url));
+            } catch (err) {
+                console.error("Error deleting show image:", err);
+            }
+        }
+        await dogImgRepository.delete_dog_images_by_type(dogID, "3");
+    } else if (dogData.delete_show_ids) {
+        const ids = dogData.delete_show_ids.split(",");
+        for (const imgId of ids) {
+            const img = await dogImgRepository.get_image_by_id(imgId);
+            if (img) {
+                try {
+                    fs.unlinkSync(path.join(uploadDirs.show, img.img_URL));
+                } catch (err) {
+                    console.error("Error deleting show image:", err);
+                }
+                await dogImgRepository.delete_dog_image_by_id(imgId);
+            }
+        }
+    }
+    if (showImages.length > 0) {
+        for (const img of showImages) {
+            await dogImgRepository.add_dog_image(dogID, img, "3");
+        }
+    }
+}
 
 const get_dogs = async ({ dog_Name, dog_Status, dog_StatusBreeding, dog_StatusSale, dog_Gender, page, limit }) => {
     const raw = await dogRepository.get_dogs({ dog_Name, dog_Status, dog_StatusBreeding, dog_StatusSale, dog_Gender, page, limit });

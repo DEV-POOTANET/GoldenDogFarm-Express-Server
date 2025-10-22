@@ -17,7 +17,16 @@ router.post(
 );
 
 // PUT http://localhost:3030/api/v1/dogs/editDog/:id
-router.put("/editDog/:id", edit_dog);
+router.put(
+    "/editDog/:id",
+    upload.fields([
+        { name: "profile", maxCount: 1 },
+        { name: "pedigree", maxCount: 1 },
+        { name: "pedigreeImg", maxCount: 1 },
+        { name: "show", maxCount: 4 }
+    ]),
+    edit_dog
+);
 
 // GET http://localhost:3030/api/v1/dogs/getDogs?dog_Name=xxx&dog_Status=xxx&dog_StatusBreeding=xxx&dog_StatusSale=xxx&dog_Gender=xxx&page=1&limit=10
 router.get("/getDogs", get_dogs);
