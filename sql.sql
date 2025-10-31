@@ -244,7 +244,24 @@ CREATE TABLE TreatmentRecords (
 );
 
 
-
+CREATE TABLE Reservation (
+     reservation_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+     breed_ID INT UNSIGNED,
+     dog_ID INT UNSIGNED,
+     cus_ID INT UNSIGNED NOT NULL,
+     user_ID INT UNSIGNED NOT NULL,
+     reservation_Date DATE NOT NULL,
+     reservation_Deposit DECIMAL(15,2) NOT NULL,
+     reservation_Status VARCHAR(1) NOT NULL CHECK (reservation_Status IN ('1','2','3','4')),
+     reservation_CancelReason VARCHAR(1) CHECK (reservation_CancelReason IN ('1','2')),
+     reservation_DepositStatus VARCHAR(1) CHECK (reservation_DepositStatus IN ('1','2','3')),
+     reservation_CancelDate DATE,
+     reservation_Notes TEXT,
+     FOREIGN KEY (breed_ID) REFERENCES Breeding(breed_ID),
+     FOREIGN KEY (dog_ID) REFERENCES Dogs(dog_ID),
+     FOREIGN KEY (cus_ID) REFERENCES Customers(cus_ID),
+     FOREIGN KEY (user_ID) REFERENCES users(user_ID)
+);
 
 
 

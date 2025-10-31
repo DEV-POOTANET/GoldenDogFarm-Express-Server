@@ -21,6 +21,7 @@ const vaccinationRoutes = require('../modules/vaccinations/vaccinationRouter');
 const dogHealthCheckRoutes = require('../modules/dogHealthCheck/dogHealthCheckRoutes');
 const treatmentRecordRoutes = require('../modules/treatmentRecord/treatmentRecordRoute');
 const breedingAttemptRoutes = require('../modules/breedingAttempt/breedingAttemptRoutes');
+const reservationRoutes = require('../modules/reservation/reservationRoutes');
 router.use('/auth',authRoutes);
 
 router.use('/users', authenticateToken,userRoutes);
@@ -54,5 +55,7 @@ router.use('/dogHealthCheck',authenticateToken, dogHealthCheckRoutes);
 router.use('/treatmentRecord',authenticateToken, treatmentRecordRoutes);
 
 router.use('/breedingAttempts',authenticateToken, breedingAttemptRoutes);
+
+router.use('/reservation',authenticateToken, reservationRoutes);
 
 module.exports = router;
