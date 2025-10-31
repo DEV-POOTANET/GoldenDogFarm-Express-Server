@@ -1,11 +1,19 @@
 const db = require("../../config/db");
 
 const add_breeding = async (mother_ID, dueDate) => {
-    const query = `
+
+    const insertQuery = `
         INSERT INTO Breeding (mother_ID, breed_DueDate, breed_Status)
-        VALUES (?, ?, '1')
-    `;
-    const [result] = await db.promise().query(query, [mother_ID, dueDate]);
+        VALUES (?, ?, '1')`;
+    const [result] = await db.promise().query(insertQuery, [mother_ID, dueDate]);
+
+    const updateQuery = `
+        UPDATE Dogs 
+        SET dog_StatusBreeding = 3 
+        WHERE dog_ID = ?`;
+
+    await db.promise().query(updateQuery, [mother_ID]);
+
     return result;
 };
 
@@ -44,8 +52,8 @@ const edit_breeding = async (id, updates) => {
 };
 
 const get_breedings = async ({ status, year, month, page, limit }) => {
-    let countQuery = `SELECT COUNT(*) as total FROM Breeding WHERE 1=1`;
-    let dataQuery = `SELECT * FROM Breeding WHERE 1=1`;
+    let countQuery = `SELECT COUNT(*) as total FROM Breeding WHERE breed_Status != 4`;
+    let dataQuery = `SELECT b.*, d.dog_Name as mother_Name FROM Breeding b LEFT JOIN Dogs d ON b.mother_ID = d.dog_ID WHERE breed_Status != 4`;
     const countParams = [];
     const dataParams = [];
 
@@ -68,6 +76,8 @@ const get_breedings = async ({ status, year, month, page, limit }) => {
         dataParams.push(year);
     }
 
+    dataQuery += ` ORDER BY b.breed_ID DESC`;
+
     if (page && limit) {
         const offset = (page - 1) * limit;
         dataQuery += ` LIMIT ? OFFSET ?`;
@@ -79,6 +89,16 @@ const get_breedings = async ({ status, year, month, page, limit }) => {
 
     const [dataResult] = await db.promise().query(dataQuery, dataParams);
 
+    if (dataResult.length > 0) {
+        const breedIds = dataResult.map(b => b.breed_ID);
+        const attemptQuery = `SELECT ba.*, dd.dog_Name as father_Name FROM BreedingAttempt ba LEFT JOIN Dogs dd ON ba.father_ID = dd.dog_ID WHERE ba.breed_ID IN (${breedIds.map(() => '?').join(',')})`;
+        const [attemptResult] = await db.promise().query(attemptQuery, breedIds);
+
+        dataResult.forEach(b => {
+            b.attempts = attemptResult.filter(a => a.breed_ID === b.breed_ID);
+        });
+    }
+
     return {
         breedings: dataResult,
         total: total
@@ -86,9 +106,17 @@ const get_breedings = async ({ status, year, month, page, limit }) => {
 };
 
 const get_breedingID = async (id) => {
-    const query = "SELECT * FROM Breeding WHERE breed_ID = ?";
+    const query = "SELECT b.*, d.dog_Name as mother_Name FROM Breeding b LEFT JOIN Dogs d ON b.mother_ID = d.dog_ID WHERE b.breed_ID = ?";
     const [results] = await db.promise().query(query, [id]);
-    return results[0] || null;
+    const breeding = results[0] || null;
+
+    if (breeding) {
+        const attemptQuery = "SELECT ba.*, dd.dog_Name as father_Name FROM BreedingAttempt ba LEFT JOIN Dogs dd ON ba.father_ID = dd.dog_ID WHERE ba.breed_ID = ?";
+        const [attempts] = await db.promise().query(attemptQuery, [id]);
+        breeding.attempts = attempts;
+    }
+
+    return breeding;
 };
 
 const disable_breeding = async (id) => {

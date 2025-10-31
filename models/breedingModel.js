@@ -1,22 +1,19 @@
 const moment = require("moment-timezone");
+const BreedingAttempt = require('./BreedingAttemptModel');
 
 class Breeding {
-    constructor({
-                    breed_ID,
-                    mother_ID,
-                    breed_DueDate,
-                    breed_ActualBirth,
-                    breed_Notes,
-                    puppy_Count,
-                    breed_Status
-                }) {
-        this.id = breed_ID;
-        this.motherId = mother_ID;
-        this.dueDate = breed_DueDate;
-        this.actualBirthDate = breed_ActualBirth;
-        this.notes = breed_Notes;
-        this.puppyCount = puppy_Count;
-        this.status = breed_Status;
+    constructor(data) {
+        this.id = data.breed_ID;
+        this.motherId = data.mother_ID;
+        this.dueDate = data.breed_DueDate;
+        this.actualBirthDate = data.breed_ActualBirth;
+        this.notes = data.breed_Notes;
+        this.puppyCount = data.puppy_Count;
+        this.status = data.breed_Status;
+
+        // join data
+        this.motherName = data.mother_Name || null;
+        this.attempts = data.attempts ? data.attempts.map(a => new BreedingAttempt(a)) : [];
     }
 
     isActive() {
@@ -36,12 +33,16 @@ class Breeding {
 
         return {
             id: this.id,
-            motherId: this.motherId,
+            mother: {
+                id: this.motherId,
+                name: this.motherName
+            },
             dueDate: formatDate(this.dueDate),
             actualBirthDate: formatDate(this.actualBirthDate),
             notes: this.notes,
             puppyCount: this.puppyCount,
-            status: this.status
+            status: this.status,
+            attempts: this.attempts.map(a => a.getProfile())
         };
     }
 }

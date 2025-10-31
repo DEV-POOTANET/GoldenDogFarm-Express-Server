@@ -149,7 +149,21 @@ CREATE TABLE Breeding (
 ALTER TABLE Dogs
     ADD CONSTRAINT fk_dog_breeding FOREIGN KEY (breeding_ID) REFERENCES Breeding(breed_ID) ON DELETE SET NULL;
 
+-- ตารางการพยายามผสมพันธุ์
+CREATE TABLE BreedingAttempt (
+ attempt_ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ breed_ID INT UNSIGNED NOT NULL,
+ father_ID INT UNSIGNED NOT NULL,
+ attempt_Date DATE NOT NULL,
+ attempt_Notes TEXT,
+ attempt_TypeBreed VARCHAR(1) NOT NULL CHECK (attempt_TypeBreed IN ('1','2')),
+ attempt_Status VARCHAR(1) NOT NULL CHECK (attempt_Status IN ('1','2','3')),
 
+-- ความสัมพันธ์กับการผสมพันธุ์
+ CONSTRAINT fk_breedingattempt_breed FOREIGN KEY (breed_ID) REFERENCES Breeding(breed_ID) ON DELETE CASCADE,
+-- ความสัมพันธ์กับพ่อสุนัข
+ CONSTRAINT fk_breedingattempt_father FOREIGN KEY (father_ID) REFERENCES Dogs(dog_ID) ON DELETE CASCADE
+);
 
 
 
